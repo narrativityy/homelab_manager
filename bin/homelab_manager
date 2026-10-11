@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Command-line companion for an installed homelab_manager.
+set -euo pipefail
+
+REPO="narrativityy/homelab_manager"
+NAME="homelab_manager"
+UNIT="$NAME.service"
+APP_DIR="/opt/$NAME"
+DATA_DIR="/var/lib/$NAME"
+CONF_DIR="/etc/$NAME"
+
+die() { printf 'Error: %s\n' "$*" >&2; exit 1; }
+need_root() { [ "$(id -u)" -eq 0 ] || die "Run this with sudo."; }
+
+usage() {
+  cat <<USAGE
+Usage: $NAME <command>
+
+  status       Show whether the service is running and where it listens
+  logs         Follow the service log (add -n 200 etc. to pass journalctl options)
+  setup-link   Print the first-run setup link, if no admin account exists yet
+  start        Start the service
+  stop         Stop the service
+  restart      Restart the service
+  update       Download and install the latest release
+  uninstall    Remove homelab_manager (asks before deleting your data)
+  version      Print the installed version
+USAGE
+}
+
+version() { "$APP_DIR/runtime/node" -p "require('$APP_DIR/package.json').version"; }
+
+# Everything runs inside main so that update and uninstall, which replace or delete
+# this file, do not pull the script out from under the shell that is reading it.
+main() {
+  cmd="${1:-}"
+  [ $# -gt 0 ] && shift
+
+  case "$cmd" in
+    status)
+      echo "Version:  $(version)"
+      echo "Service:  $(systemctl is-active "$UNIT" || true), start on boot $(systemctl is-enabled "$UNIT" 2>/dev/null || true)"
+      if [ -r "$CONF_DIR/config.env" ]; then
+        # shellcheck disable=SC1091
+        . "$CONF_DIR/config.env"
+        echo "Address:  http://$HLM_HOST:$HLM_PORT"
+      fi
+      ;;
+    logs)
+      if [ $# -eq 0 ]; then set -- -f -n 50; fi
+      exec journalctl -u "$UNIT" "$@"
+      ;;
+    setup-link)
+      # shellcheck disable=SC1091
+      . "$CONF_DIR/config.env" 2>/dev/null || die "Cannot read $CONF_DIR/config.env; run this with sudo."
+      case "$HLM_HOST" in 0.0.0.0 | ::) probe_host="127.0.0.1" ;; *) probe_host="$HLM_HOST" ;; esac
+      pending="$("$APP_DIR/runtime/node" -e "fetch('http://$probe_host:$HLM_PORT/api/auth/status').then(r=>r.json()).then(s=>console.log(s.setupRequired?'yes':'no'),()=>console.log('down'))")"
+      [ "$pending" != "down" ] || die "The service is not answering. Check: sudo $NAME logs"
+      [ "$pending" = "yes" ] || die "Setup is already complete; an admin account exists."
+      # The token is regenerated on every start, so only the current run's log is valid.
+      link="$(journalctl -u "$UNIT" -o cat _SYSTEMD_INVOCATION_ID="$(systemctl show -p InvocationID --value "$UNIT")" 2>/dev/null | grep -o 'http[^ ]*?setup=[^ ]*' | tail -n1 || true)"
+      [ -n "$link" ] || die "Could not read the setup link from the log; run this with sudo."
+      echo "$link"
+      ;;
+    start | stop | restart)
+      need_root
+      systemctl "$cmd" "$UNIT"
+      ;;
+    update)
+      need_root
+      command -v curl >/dev/null || die "curl is required."
+      tmp="$(mktemp)"
+      trap 'rm -f "$tmp"' EXIT
+      curl -fsSL -o "$tmp" "https://github.com/$REPO/releases/latest/download/install.sh"
+      bash "$tmp" --yes "$@"
+      ;;
+    uninstall)
+      need_root
+      purge=0
+      [ "${1:-}" = "--purge" ] && purge=1
+      if [ "$purge" -eq 0 ] && [ -t 0 ]; then
+        printf 'Also delete settings and data (accounts, history) in %s and %s? [y/N] ' "$CONF_DIR" "$DATA_DIR"
+        read -r answer
+        case "$answer" in y | Y | yes) purge=1 ;; esac
+      fi
+      systemctl disable --now "$UNIT" 2>/dev/null || true
+      rm -f "/etc/systemd/system/$UNIT" "/etc/sudoers.d/$NAME" "/usr/local/bin/$NAME"
+      systemctl daemon-reload
+      rm -rf "$APP_DIR"
+      if [ "$purge" -eq 1 ]; then
+        rm -rf "$CONF_DIR" "$DATA_DIR"
+        userdel "$NAME" 2>/dev/null || true
+        echo "Removed $NAME and its data."
+      else
+        echo "Removed $NAME. Settings and data were kept in $CONF_DIR and $DATA_DIR."
+      fi
+      ;;
+    version | --version | -v) version ;;
+    "" | help | -h | --help) usage ;;
+    *) usage >&2; exit 1 ;;
+  esac
+}
+
+main "$@"
+exit

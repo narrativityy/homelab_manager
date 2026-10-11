@@ -1,0 +1,24 @@
+[Unit]
+Description=Homelab Manager dashboard
+Documentation=https://github.com/narrativityy/homelab_manager
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=homelab_manager
+Group=homelab_manager
+WorkingDirectory=/opt/homelab_manager
+Environment=NODE_ENV=production
+Environment=HLM_DATA_DIR=/var/lib/homelab_manager
+Environment=HLM_SYSTEMD_UNIT=homelab_manager.service
+Environment=HLM_SYSTEMCTL=@SYSTEMCTL@
+EnvironmentFile=/etc/homelab_manager/config.env
+ExecStart=/opt/homelab_manager/runtime/node /opt/homelab_manager/server/src/index.js
+# Retries while the listen address is not available yet (a VPN interface coming up at boot).
+Restart=on-failure
+RestartSec=5
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,6 @@
+# Installed by homelab_manager. Lets the dashboard manage its own service and nothing else.
+# These must match the argument lists in server/src/service.js exactly.
+homelab_manager ALL=(root) NOPASSWD: @SYSTEMCTL@ --no-block restart homelab_manager.service
+homelab_manager ALL=(root) NOPASSWD: @SYSTEMCTL@ --no-block stop homelab_manager.service
+homelab_manager ALL=(root) NOPASSWD: @SYSTEMCTL@ enable homelab_manager.service
+homelab_manager ALL=(root) NOPASSWD: @SYSTEMCTL@ disable homelab_manager.service
