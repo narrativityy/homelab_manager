@@ -34,7 +34,13 @@ export async function sample() {
   return {
     ts: Date.now(),
     cpu: { percent: load.currentLoad, cores: load.cpus.length, loadAvg: load.avgLoad },
-    mem: { used: memUsed, total: mem.total, percent: pct(memUsed, mem.total), swapUsed: mem.swapused, swapTotal: mem.swaptotal },
+    mem: {
+      used: memUsed,
+      total: mem.total,
+      percent: pct(memUsed, mem.total),
+      swapUsed: mem.swapused,
+      swapTotal: mem.swaptotal,
+    },
     disk: root,
     disks,
     temp: Number.isFinite(temp.main) ? temp.main : null,
@@ -44,7 +50,9 @@ export async function sample() {
       rx: iface && iface.rx_sec >= 0 ? iface.rx_sec : null,
       tx: iface && iface.tx_sec >= 0 ? iface.tx_sec : null,
     },
-    battery: battery.hasBattery ? { percent: battery.percent, charging: battery.isCharging, acConnected: battery.acConnected } : null,
+    battery: battery.hasBattery
+      ? { percent: battery.percent, charging: battery.isCharging, acConnected: battery.acConnected }
+      : null,
     uptime: si.time().uptime,
   };
 }
@@ -52,8 +60,15 @@ export async function sample() {
 async function collect() {
   try {
     const s = await sample();
-    db.prepare('INSERT OR REPLACE INTO stats (ts, cpu, mem, disk, temp, rx, tx) VALUES (?, ?, ?, ?, ?, ?, ?)')
-      .run(s.ts, s.cpu.percent, s.mem.percent, s.disk ? s.disk.percent : null, s.temp, s.net.rx, s.net.tx);
+    db.prepare('INSERT OR REPLACE INTO stats (ts, cpu, mem, disk, temp, rx, tx) VALUES (?, ?, ?, ?, ?, ?, ?)').run(
+      s.ts,
+      s.cpu.percent,
+      s.mem.percent,
+      s.disk ? s.disk.percent : null,
+      s.temp,
+      s.net.rx,
+      s.net.tx,
+    );
     db.prepare('DELETE FROM stats WHERE ts < ?').run(Date.now() - RETENTION_MS);
   } catch (err) {
     console.error('stats collection failed:', err.message);
@@ -77,11 +92,15 @@ export const statsRouter = express.Router();
 statsRouter.get('/history', (req, res) => {
   const range = RANGES[req.query.range] ? req.query.range : '1h';
   const [windowMs, bucketMs] = RANGES[range];
-  const points = db.prepare(`
+  const points = db
+    .prepare(
+      `
     SELECT (ts / ?) * ? AS ts, AVG(cpu) AS cpu, AVG(mem) AS mem, AVG(disk) AS disk,
            AVG(temp) AS temp, AVG(rx) AS rx, AVG(tx) AS tx
     FROM stats WHERE ts >= ? GROUP BY ts / ? ORDER BY ts
-  `).all(bucketMs, bucketMs, Date.now() - windowMs, bucketMs);
+  `,
+    )
+    .all(bucketMs, bucketMs, Date.now() - windowMs, bucketMs);
   res.json({ range, points });
 });
 

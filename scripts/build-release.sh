@@ -20,7 +20,7 @@ npm run build
 
 rm -rf "$out/stage"
 mkdir -p "$stage/runtime"
-cp -r server bin packaging package.json package-lock.json install.sh README.md "$stage/"
+cp -r server bin packaging package.json package-lock.json install.sh README.md LICENSE "$stage/"
 mkdir -p "$stage/client"
 cp -r client/dist "$stage/client/dist"
 (cd "$stage" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund)

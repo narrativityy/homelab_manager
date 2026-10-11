@@ -1,5 +1,7 @@
 # homelab_manager
 
+[![CI](https://github.com/narrativityy/homelab_manager/actions/workflows/ci.yml/badge.svg)](https://github.com/narrativityy/homelab_manager/actions/workflows/ci.yml)
+
 A self-hosted web dashboard for managing a Linux homelab server from the browser.
 
 **Status: early development.** What works today:
@@ -32,13 +34,13 @@ not expose it to the internet directly; use a VPN such as Tailscale or WireGuard
 
 What it puts on the system:
 
-| Path | Contents |
-|---|---|
-| `/opt/homelab_manager` | The program and its bundled Node runtime |
-| `/var/lib/homelab_manager` | Database (accounts, sessions, stat history) |
-| `/etc/homelab_manager/config.env` | Listen address and port |
-| `/etc/systemd/system/homelab_manager.service` | The service |
-| `/etc/sudoers.d/homelab_manager` | Lets the dashboard restart, stop, enable and disable its own service, nothing else |
+| Path                                          | Contents                                                                           |
+| --------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `/opt/homelab_manager`                        | The program and its bundled Node runtime                                           |
+| `/var/lib/homelab_manager`                    | Database (accounts, sessions, stat history)                                        |
+| `/etc/homelab_manager/config.env`             | Listen address and port                                                            |
+| `/etc/systemd/system/homelab_manager.service` | The service                                                                        |
+| `/etc/sudoers.d/homelab_manager`              | Lets the dashboard restart, stop, enable and disable its own service, nothing else |
 
 The service runs as a dedicated `homelab_manager` user, not root.
 
@@ -72,9 +74,21 @@ npm run dev
 This runs the API on port 7575 with auto-restart and the Vite dev server on port 5173, which proxies
 `/api` and `/ws` to it. On first start the server prints a setup link containing a one-time token.
 
+Before committing:
+
+```bash
+npm run lint
+npm run format
+npm test
+```
+
 `./scripts/build-release.sh` builds a release archive in `dist/` for the current architecture. Test it with
 `sudo ./install.sh --archive dist/homelab_manager-linux-x64.tar.gz`. Pushing a `v*` tag builds and publishes
-a release for both architectures.
+a release for both architectures. `./scripts/test-installer.sh` runs the installer end to end in a
+throwaway systemd container.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how changes land, and the
+[v0.1.0 milestone](https://github.com/narrativityy/homelab_manager/milestone/1) for what is planned.
 
 ## Layout
 
@@ -82,6 +96,12 @@ a release for both architectures.
 server/src/   Express API, WebSocket stats push, SQLite (node:sqlite)
 client/src/   React app (Vite)
 packaging/    systemd unit and sudoers templates
+test/         API tests (node:test)
+scripts/      release build and installer test
 bin/          the homelab_manager command
 install.sh    installer and upgrader
 ```
+
+## License
+
+[MIT](LICENSE)

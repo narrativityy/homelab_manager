@@ -23,11 +23,26 @@ export default function Login({ onDone }) {
 
   return (
     <AuthCard title="Sign in" error={error} onSubmit={submit}>
-      <Field label="Username" value={username} onChange={(e) => setUsername(e.target.value)}
-        autoComplete="username" autoCapitalize="none" autoFocus required />
-      <Field label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-        autoComplete="current-password" required />
-      <button className="btn btn-primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+      <Field
+        label="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        autoComplete="username"
+        autoCapitalize="none"
+        autoFocus
+        required
+      />
+      <Field
+        label="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        autoComplete="current-password"
+        required
+      />
+      <button className="btn btn-primary" disabled={busy}>
+        {busy ? 'Signing in…' : 'Sign in'}
+      </button>
     </AuthCard>
   );
 }

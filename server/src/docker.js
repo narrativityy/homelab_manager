@@ -22,7 +22,11 @@ function docker(method, path, { raw = false } = {}) {
         const body = Buffer.concat(chunks);
         if (res.statusCode >= 400) {
           let message = body.toString();
-          try { message = JSON.parse(message).message; } catch { /* plain-text error */ }
+          try {
+            message = JSON.parse(message).message;
+          } catch {
+            /* plain-text error */
+          }
           const err = new Error(message || `Docker returned ${res.statusCode}`);
           err.status = res.statusCode;
           return reject(err);

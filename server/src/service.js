@@ -21,7 +21,10 @@ const privileged = (action) => run('sudo', ['-n', config.systemctl, ...PRIVILEGE
 
 /** Whether the sudo rule is in place; checked once, without running anything. */
 const canControl = unit
-  ? run('sudo', ['-n', '-l', config.systemctl, ...PRIVILEGED.enable]).then(() => true, () => false)
+  ? run('sudo', ['-n', '-l', config.systemctl, ...PRIVILEGED.enable]).then(
+      () => true,
+      () => false,
+    )
   : Promise.resolve(false);
 
 async function status() {

@@ -11,7 +11,13 @@ export function levelFor(value, [warn, crit]) {
 
 export function Meter({ percent, level = 'ok' }) {
   return (
-    <div className={`meter level-${level}`} role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)}>
+    <div
+      className={`meter level-${level}`}
+      role="meter"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(percent)}
+    >
       <span style={{ width: `${Math.max(0, Math.min(100, percent))}%` }} />
     </div>
   );
@@ -23,7 +29,9 @@ export default function StatTile({ label, value, detail, percent, level = 'ok', 
       <header>
         <h2>{label}</h2>
         {LEVEL_LABEL[level] && (
-          <span className={`chip level-${level}`}><AlertIcon /> {LEVEL_LABEL[level]}</span>
+          <span className={`chip level-${level}`}>
+            <AlertIcon /> {LEVEL_LABEL[level]}
+          </span>
         )}
       </header>
       <div className="tile-value">{value}</div>
