@@ -18,6 +18,9 @@ echo "==> Building a systemd test image from $IMAGE"
 docker build -q -t hlm-installer-test - >/dev/null <<DOCKERFILE
 FROM $IMAGE
 RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq systemd systemd-sysv sudo iproute2 curl ca-certificates >/dev/null && rm -rf /var/lib/apt/lists/*
+# The container is privileged and shares the host's devices. Without this its init starts login
+# prompts on the host's real consoles and hangs up the host's own getty.
+RUN systemctl mask getty.target console-getty.service getty@tty1.service serial-getty@.service systemd-logind.service
 CMD ["/sbin/init"]
 DOCKERFILE
 
