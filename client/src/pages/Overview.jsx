@@ -23,7 +23,11 @@ export default function Overview({ stats }) {
 
   useEffect(() => {
     api.system().then(setSystem, () => {});
-    const load = () => api.history('1h').then((res) => setHistory(res.points), () => {});
+    const load = () =>
+      api.history('1h').then(
+        (res) => setHistory(res.points),
+        () => {},
+      );
     load();
     const id = setInterval(load, HISTORY_REFRESH_MS);
     return () => clearInterval(id);
@@ -47,35 +51,58 @@ export default function Overview({ stats }) {
       </div>
 
       <div className="tiles">
-        <StatTile label="CPU" value={formatPercent(s?.cpu.percent)}
+        <StatTile
+          label="CPU"
+          value={formatPercent(s?.cpu.percent)}
           detail={s ? `${s.cpu.cores} threads · load ${s.cpu.loadAvg.toFixed(2)}` : ' '}
-          percent={s?.cpu.percent ?? 0} level={levelFor(s?.cpu.percent, CPU_LEVELS)}
-          trend={trend('cpu', s?.cpu.percent, { max: 100, format: formatPercent })} />
+          percent={s?.cpu.percent ?? 0}
+          level={levelFor(s?.cpu.percent, CPU_LEVELS)}
+          trend={trend('cpu', s?.cpu.percent, { max: 100, format: formatPercent })}
+        />
 
-        <StatTile label="Memory" value={formatPercent(s?.mem.percent)}
+        <StatTile
+          label="Memory"
+          value={formatPercent(s?.mem.percent)}
           detail={s ? `${formatBytes(s.mem.used)} of ${formatBytes(s.mem.total)}` : ' '}
-          percent={s?.mem.percent ?? 0} level={levelFor(s?.mem.percent, USAGE_LEVELS)}
-          trend={trend('mem', s?.mem.percent, { max: 100, format: formatPercent })} />
+          percent={s?.mem.percent ?? 0}
+          level={levelFor(s?.mem.percent, USAGE_LEVELS)}
+          trend={trend('mem', s?.mem.percent, { max: 100, format: formatPercent })}
+        />
 
-        <StatTile label={`Disk${s?.disk ? ` (${s.disk.mount})` : ''}`} value={formatPercent(s?.disk?.percent)}
+        <StatTile
+          label={`Disk${s?.disk ? ` (${s.disk.mount})` : ''}`}
+          value={formatPercent(s?.disk?.percent)}
           detail={s?.disk ? `${formatBytes(s.disk.used)} of ${formatBytes(s.disk.size)}` : ' '}
-          percent={s?.disk?.percent ?? 0} level={levelFor(s?.disk?.percent, USAGE_LEVELS)}
-          trend={trend('disk', s?.disk?.percent, { max: 100, format: formatPercent })} />
+          percent={s?.disk?.percent ?? 0}
+          level={levelFor(s?.disk?.percent, USAGE_LEVELS)}
+          trend={trend('disk', s?.disk?.percent, { max: 100, format: formatPercent })}
+        />
 
         {(!s || s.temp != null) && (
-          <StatTile label="Temperature" value={formatTemp(s?.temp)} detail="CPU"
+          <StatTile
+            label="Temperature"
+            value={formatTemp(s?.temp)}
+            detail="CPU"
             level={levelFor(s?.temp, TEMP_LEVELS)}
-            trend={trend('temp', s?.temp, { fit: true, format: formatTemp })} />
+            trend={trend('temp', s?.temp, { fit: true, format: formatTemp })}
+          />
         )}
 
-        <StatTile label="Network" value={<>↓ {formatRate(s?.net.rx)}</>}
+        <StatTile
+          label="Network"
+          value={<>↓ {formatRate(s?.net.rx)}</>}
           detail={s ? `↑ ${formatRate(s.net.tx)} · ${s.net.iface}` : ' '}
-          trend={trend('rx', s?.net.rx, { format: formatRate, label: 'Download, last hour' })} />
+          trend={trend('rx', s?.net.rx, { format: formatRate, label: 'Download, last hour' })}
+        />
 
         {s?.battery && (
-          <StatTile label="Battery" value={formatPercent(s.battery.percent)} detail={batteryState(s.battery)}
+          <StatTile
+            label="Battery"
+            value={formatPercent(s.battery.percent)}
+            detail={batteryState(s.battery)}
             percent={s.battery.percent}
-            level={!s.battery.acConnected && s.battery.percent <= 20 ? 'warn' : 'ok'} />
+            level={!s.battery.acConnected && s.battery.percent <= 20 ? 'warn' : 'ok'}
+          />
         )}
       </div>
 
@@ -85,13 +112,23 @@ export default function Overview({ stats }) {
           <div className="table-wrap">
             <table>
               <thead>
-                <tr><th>Mount</th><th className="wide-only">Device</th><th className="num">Used</th><th className="num">Size</th><th>Usage</th></tr>
+                <tr>
+                  <th>Mount</th>
+                  <th className="wide-only">Device</th>
+                  <th className="num">Used</th>
+                  <th className="num">Size</th>
+                  <th>Usage</th>
+                </tr>
               </thead>
               <tbody>
                 {(s?.disks || []).map((d) => (
                   <tr key={d.mount}>
-                    <td><code>{d.mount}</code></td>
-                    <td className="dim wide-only">{d.fs} · {d.type}</td>
+                    <td>
+                      <code>{d.mount}</code>
+                    </td>
+                    <td className="dim wide-only">
+                      {d.fs} · {d.type}
+                    </td>
                     <td className="num">{formatBytes(d.used)}</td>
                     <td className="num">{formatBytes(d.size)}</td>
                     <td>
@@ -110,12 +147,18 @@ export default function Overview({ stats }) {
         <section className="card">
           <h2>System</h2>
           <dl>
-            <dt>OS</dt><dd>{system?.os || '–'}</dd>
-            <dt>Kernel</dt><dd>{system ? `${system.kernel} (${system.arch})` : '–'}</dd>
-            <dt>Processor</dt><dd>{system?.cpu || '–'}</dd>
-            <dt>Hardware</dt><dd>{system?.model || '–'}</dd>
-            <dt>Uptime</dt><dd>{formatUptime(s?.uptime)}</dd>
-            <dt>Swap</dt><dd>{s ? `${formatBytes(s.mem.swapUsed)} of ${formatBytes(s.mem.swapTotal)}` : '–'}</dd>
+            <dt>OS</dt>
+            <dd>{system?.os || '–'}</dd>
+            <dt>Kernel</dt>
+            <dd>{system ? `${system.kernel} (${system.arch})` : '–'}</dd>
+            <dt>Processor</dt>
+            <dd>{system?.cpu || '–'}</dd>
+            <dt>Hardware</dt>
+            <dd>{system?.model || '–'}</dd>
+            <dt>Uptime</dt>
+            <dd>{formatUptime(s?.uptime)}</dd>
+            <dt>Swap</dt>
+            <dd>{s ? `${formatBytes(s.mem.swapUsed)} of ${formatBytes(s.mem.swapTotal)}` : '–'}</dd>
           </dl>
         </section>
       </div>

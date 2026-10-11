@@ -5,11 +5,17 @@ export default function AuthCard({ title, lead, error, children, onSubmit }) {
   return (
     <main className="auth">
       <form className="auth-card" onSubmit={onSubmit}>
-        <div className="brand"><Logo /> Homelab Manager</div>
+        <div className="brand">
+          <Logo /> Homelab Manager
+        </div>
         <h1>{title}</h1>
         {lead && <p className="lead">{lead}</p>}
         {children}
-        {error && <p className="form-error" role="alert">{error}</p>}
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
       </form>
     </main>
   );

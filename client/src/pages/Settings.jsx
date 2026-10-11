@@ -25,22 +25,41 @@ function StopDialog({ dialogRef, onStopped }) {
   }
 
   return (
-    <dialog ref={dialogRef} onClose={() => { setPassword(''); setError(null); }}>
+    <dialog
+      ref={dialogRef}
+      onClose={() => {
+        setPassword('');
+        setError(null);
+      }}
+    >
       <form onSubmit={submit}>
         <h2>Stop the dashboard?</h2>
-        <p>
-          It will go offline and can't be started again from the browser. To bring it back, run this on the server:
-        </p>
-        <pre><code>{START_COMMAND}</code></pre>
+        <p>It will go offline and can't be started again from the browser. To bring it back, run this on the server:</p>
+        <pre>
+          <code>{START_COMMAND}</code>
+        </pre>
         <label className="field">
           <span>Confirm your password</span>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password" required />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
         </label>
-        {error && <p className="form-error" role="alert">{error}</p>}
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
         <div className="dialog-actions">
-          <button type="button" className="btn" onClick={() => dialogRef.current.close()}>Cancel</button>
-          <button className="btn btn-danger" disabled={busy}>{busy ? 'Stopping…' : 'Stop dashboard'}</button>
+          <button type="button" className="btn" onClick={() => dialogRef.current.close()}>
+            Cancel
+          </button>
+          <button className="btn btn-danger" disabled={busy}>
+            {busy ? 'Stopping…' : 'Stop dashboard'}
+          </button>
         </div>
       </form>
     </dialog>
@@ -78,7 +97,9 @@ export default function Settings() {
         return setPhase('restarted');
       }
     }
-    setError(`The dashboard did not come back within ${RESTART_TIMEOUT_MS / 1000} seconds. Check it on the server with: sudo homelab_manager logs`);
+    setError(
+      `The dashboard did not come back within ${RESTART_TIMEOUT_MS / 1000} seconds. Check it on the server with: sudo homelab_manager logs`,
+    );
     setPhase('idle');
   }
 
@@ -98,7 +119,9 @@ export default function Settings() {
       <div className="page-head">
         <h1>Dashboard stopped</h1>
         <p>Start it again from the server with:</p>
-        <pre><code>{START_COMMAND}</code></pre>
+        <pre>
+          <code>{START_COMMAND}</code>
+        </pre>
       </div>
     );
   }
@@ -115,12 +138,16 @@ export default function Settings() {
       <section className="card settings-card">
         <h2>Dashboard service</h2>
 
-        {error && <p className="form-error" role="alert">{error}</p>}
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
 
         {service && !service.managed && (
           <p className="notice">
-            This dashboard was started by hand, not as a systemd service, so there is nothing to control here.
-            Install it with the installer to get restart, stop and start-on-boot controls.
+            This dashboard was started by hand, not as a systemd service, so there is nothing to control here. Install
+            it with the installer to get restart, stop and start-on-boot controls.
           </p>
         )}
         {service?.managed && !service.canControl && (
@@ -130,9 +157,18 @@ export default function Settings() {
         )}
 
         <dl>
-          <dt>Version</dt><dd>{service?.version ?? '–'}</dd>
-          <dt>Running since</dt><dd>{service ? formatStarted(service.startedAt) : '–'}</dd>
-          {service?.managed && <><dt>Service</dt><dd><code>{service.unit}</code></dd></>}
+          <dt>Version</dt>
+          <dd>{service?.version ?? '–'}</dd>
+          <dt>Running since</dt>
+          <dd>{service ? formatStarted(service.startedAt) : '–'}</dd>
+          {service?.managed && (
+            <>
+              <dt>Service</dt>
+              <dd>
+                <code>{service.unit}</code>
+              </dd>
+            </>
+          )}
         </dl>
 
         {usable && (
@@ -142,8 +178,14 @@ export default function Settings() {
                 <strong id="boot-label">Start on boot</strong>
                 <p>Start the dashboard automatically when the server starts.</p>
               </div>
-              <button className="switch" role="switch" aria-checked={service.startOnBoot} aria-labelledby="boot-label"
-                disabled={bootBusy} onClick={() => setBoot(!service.startOnBoot)}>
+              <button
+                className="switch"
+                role="switch"
+                aria-checked={service.startOnBoot}
+                aria-labelledby="boot-label"
+                disabled={bootBusy}
+                onClick={() => setBoot(!service.startOnBoot)}
+              >
                 <span />
               </button>
             </div>
@@ -152,12 +194,16 @@ export default function Settings() {
               <div>
                 <strong>Restart</strong>
                 <p role="status">
-                  {phase === 'restarting' ? 'Restarting… this page reconnects on its own.'
-                    : phase === 'restarted' ? 'Restarted.'
-                    : 'Stops and starts the dashboard. You stay signed in.'}
+                  {phase === 'restarting'
+                    ? 'Restarting… this page reconnects on its own.'
+                    : phase === 'restarted'
+                      ? 'Restarted.'
+                      : 'Stops and starts the dashboard. You stay signed in.'}
                 </p>
               </div>
-              <button className="btn" disabled={phase === 'restarting'} onClick={restart}>Restart</button>
+              <button className="btn" disabled={phase === 'restarting'} onClick={restart}>
+                Restart
+              </button>
             </div>
 
             <div className="setting">
@@ -165,14 +211,25 @@ export default function Settings() {
                 <strong>Stop</strong>
                 <p>Shuts the dashboard down until it is started from the server.</p>
               </div>
-              <button className="btn btn-danger-outline" disabled={phase === 'restarting'}
-                onClick={() => dialogRef.current.showModal()}>Stop…</button>
+              <button
+                className="btn btn-danger-outline"
+                disabled={phase === 'restarting'}
+                onClick={() => dialogRef.current.showModal()}
+              >
+                Stop…
+              </button>
             </div>
           </>
         )}
       </section>
 
-      <StopDialog dialogRef={dialogRef} onStopped={() => { dialogRef.current.close(); setPhase('stopped'); }} />
+      <StopDialog
+        dialogRef={dialogRef}
+        onStopped={() => {
+          dialogRef.current.close();
+          setPhase('stopped');
+        }}
+      />
     </>
   );
 }

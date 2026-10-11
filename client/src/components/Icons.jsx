@@ -1,4 +1,10 @@
-const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
+const stroke = {
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.8,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+};
 
 export const Logo = () => (
   <svg className="logo" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true">

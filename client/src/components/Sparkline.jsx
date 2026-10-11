@@ -21,7 +21,7 @@ export default function Sparkline({ points, max, fit = false, format, label }) {
   const high = Math.max(...values);
   const pad = fit ? Math.max((high - low) * 0.25, 2) : 0;
   const floor = fit ? low - pad : 0;
-  const top = fit ? high + pad : max ?? (high * 1.15 || 1);
+  const top = fit ? high + pad : (max ?? (high * 1.15 || 1));
   const t0 = data[0].t;
   const span = data[data.length - 1].t - t0 || 1;
   const x = (p) => ((p.t - t0) / span) * 100;

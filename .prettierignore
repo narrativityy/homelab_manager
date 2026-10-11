@@ -1,0 +1,6 @@
+client/dist/
+dist/
+data/
+node_modules/
+package-lock.json
+CHANGELOG.md

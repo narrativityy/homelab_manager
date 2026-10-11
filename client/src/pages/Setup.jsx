@@ -29,19 +29,52 @@ export default function Setup({ onDone }) {
   }
 
   return (
-    <AuthCard title="Create your admin account" error={error} onSubmit={submit}
-      lead="This account controls the dashboard. You only do this once.">
+    <AuthCard
+      title="Create your admin account"
+      error={error}
+      onSubmit={submit}
+      lead="This account controls the dashboard. You only do this once."
+    >
       {!linkToken && (
-        <Field label="Setup token" value={token} onChange={(e) => setToken(e.target.value)}
-          hint="Printed in the server log when it starts: journalctl -u homelab_manager" autoFocus required />
+        <Field
+          label="Setup token"
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+          hint="Printed in the server log when it starts: journalctl -u homelab_manager"
+          autoFocus
+          required
+        />
       )}
-      <Field label="Username" value={username} onChange={(e) => setUsername(e.target.value)}
-        autoComplete="username" autoCapitalize="none" autoFocus={Boolean(linkToken)} required />
-      <Field label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-        autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} hint={`At least ${MIN_PASSWORD_LENGTH} characters`} required />
-      <Field label="Confirm password" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
-        autoComplete="new-password" required />
-      <button className="btn btn-primary" disabled={busy}>{busy ? 'Creating…' : 'Create account'}</button>
+      <Field
+        label="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        autoComplete="username"
+        autoCapitalize="none"
+        autoFocus={Boolean(linkToken)}
+        required
+      />
+      <Field
+        label="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        autoComplete="new-password"
+        minLength={MIN_PASSWORD_LENGTH}
+        hint={`At least ${MIN_PASSWORD_LENGTH} characters`}
+        required
+      />
+      <Field
+        label="Confirm password"
+        type="password"
+        value={confirm}
+        onChange={(e) => setConfirm(e.target.value)}
+        autoComplete="new-password"
+        required
+      />
+      <button className="btn btn-primary" disabled={busy}>
+        {busy ? 'Creating…' : 'Create account'}
+      </button>
     </AuthCard>
   );
 }

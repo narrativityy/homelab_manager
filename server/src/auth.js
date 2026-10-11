@@ -109,8 +109,12 @@ function parseCookies(header = '') {
 function startSession(req, res, user) {
   const token = crypto.randomBytes(32).toString('base64url');
   const now = Date.now();
-  db.prepare('INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)')
-    .run(hashToken(token), user.id, now, now + SESSION_TTL_MS);
+  db.prepare('INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)').run(
+    hashToken(token),
+    user.id,
+    now,
+    now + SESSION_TTL_MS,
+  );
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: 'strict',
@@ -124,11 +128,15 @@ function startSession(req, res, user) {
 export function getSessionUser(req) {
   const token = parseCookies(req.headers.cookie)[COOKIE_NAME];
   if (!token) return null;
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT users.id, users.username FROM sessions
     JOIN users ON users.id = sessions.user_id
     WHERE sessions.token_hash = ? AND sessions.expires_at > ?
-  `).get(hashToken(token), Date.now());
+  `,
+    )
+    .get(hashToken(token), Date.now());
   return row || null;
 }
 

@@ -19,7 +19,15 @@ export default function App() {
     return (
       <div className="splash">
         <p>Can't reach the server.</p>
-        <button className="btn" onClick={() => { setError(null); refresh(); }}>Try again</button>
+        <button
+          className="btn"
+          onClick={() => {
+            setError(null);
+            refresh();
+          }}
+        >
+          Try again
+        </button>
       </div>
     );
   }

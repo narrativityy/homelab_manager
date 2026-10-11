@@ -2,4 +2,6 @@
 try {
   var saved = localStorage.getItem('hlm-theme');
   if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
-} catch (e) {}
+} catch {
+  // storage unavailable: fall back to the system theme
+}

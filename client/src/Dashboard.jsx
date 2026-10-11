@@ -15,12 +15,17 @@ const PAGES = [
 
 function useTheme() {
   const [theme, setTheme] = useState(
-    () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    () =>
+      document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
   );
   function toggle() {
     const next = theme === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = next;
-    try { localStorage.setItem('hlm-theme', next); } catch { /* private mode: applies for this visit only */ }
+    try {
+      localStorage.setItem('hlm-theme', next);
+    } catch {
+      /* private mode: applies for this visit only */
+    }
     setTheme(next);
   }
   return [theme, toggle];
@@ -49,23 +54,40 @@ export default function Dashboard({ username, onSignedOut }) {
     <div className="app">
       <header className="topbar">
         <div className="topbar-main">
-          <div className="brand"><Logo /> Homelab Manager</div>
+          <div className="brand">
+            <Logo /> Homelab Manager
+          </div>
           <nav aria-label="Pages">
             {PAGES.map((page) => (
-              <a key={page.path} href={page.path} aria-current={path === page.path ? 'page' : undefined}
-                onClick={(event) => { event.preventDefault(); go(page.path); }}>
+              <a
+                key={page.path}
+                href={page.path}
+                aria-current={path === page.path ? 'page' : undefined}
+                onClick={(event) => {
+                  event.preventDefault();
+                  go(page.path);
+                }}
+              >
                 {page.label}
               </a>
             ))}
           </nav>
         </div>
         <div className="topbar-actions">
-          <span className={`conn conn-${status}`} role="status"><i /> {STATUS_LABEL[status]}</span>
-          <button className="btn btn-icon" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}>
+          <span className={`conn conn-${status}`} role="status">
+            <i /> {STATUS_LABEL[status]}
+          </span>
+          <button
+            className="btn btn-icon"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+          >
             {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
           </button>
           <span className="user">{username}</span>
-          <button className="btn" onClick={() => api.logout().finally(onSignedOut)}>Sign out</button>
+          <button className="btn" onClick={() => api.logout().finally(onSignedOut)}>
+            Sign out
+          </button>
         </div>
       </header>
 

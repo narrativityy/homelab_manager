@@ -58,7 +58,8 @@ if (fs.existsSync(config.clientDist)) {
   });
 }
 
-app.use((err, req, res, next) => {
+// Express identifies error handlers by their four parameters, so _next must stay.
+app.use((err, req, res, _next) => {
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON' });
   console.error(err);
   res.status(500).json({ error: 'Internal server error' });
