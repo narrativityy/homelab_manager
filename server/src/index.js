@@ -5,6 +5,7 @@ import path from 'node:path';
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import { config } from './config.js';
+import { dockerRouter } from './docker.js';
 import { authRouter, getSessionUser, initSetupToken, purgeExpiredSessions, requireAuth } from './auth.js';
 import { serviceRouter } from './service.js';
 import { startCollector, statsRouter } from './stats.js';
@@ -46,6 +47,7 @@ app.use(express.json({ limit: '100kb' }));
 app.use('/api/auth', authRouter);
 app.use('/api/stats', requireAuth, statsRouter);
 app.use('/api/service', requireAuth, serviceRouter);
+app.use('/api/docker', requireAuth, dockerRouter);
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 if (fs.existsSync(config.clientDist)) {

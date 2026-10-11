@@ -161,6 +161,7 @@ code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-si
 
 .page { max-width: 1180px; margin: 0 auto; padding: 28px 24px 56px; }
 .page-head { margin-bottom: 22px; }
+.page > .form-error { margin-bottom: 14px; }
 .page-head h1 { font-size: 26px; letter-spacing: -0.02em; line-height: 1.2; }
 .page-head p { color: var(--ink-2); margin-top: 4px; }
 
@@ -263,9 +264,35 @@ dt { color: var(--ink-2); padding-right: 20px; }
 dd { text-align: right; overflow-wrap: anywhere; }
 dt:first-of-type, dt:first-of-type + dd { border-top: 0; padding-top: 2px; }
 
+/* ---- containers ---- */
+
+.small { font-size: 12.5px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.containers td { vertical-align: middle; padding-top: 11px; padding-bottom: 11px; }
+.containers strong { font-weight: 600; }
+
+/* The label names the state; the dot only reinforces it. */
+.state { display: inline-flex; align-items: center; gap: 7px; }
+.state i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.state-running i { background: var(--good); }
+.state-restarting i, .state-paused i { background: var(--warn); }
+.state-dead i { background: var(--crit); }
+
+.port { display: inline-block; margin: 2px 6px 2px 0; padding: 1px 6px; border-radius: 5px; background: color-mix(in oklab, var(--ink) 6%, var(--surface)); }
+
+.row-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-height: 32px; }
+.row-error { color: var(--ink); margin-top: 6px; white-space: normal; max-width: 40ch; padding: 4px 8px; border-radius: 6px; border: 1px solid color-mix(in oklab, var(--crit) 45%, transparent); }
+
+.dialog-wide { width: min(980px, calc(100vw - 32px)); }
+.dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.dialog-head h2 { margin: 0; }
+.logs { height: min(60vh, 560px); overflow: auto; margin: 0 0 8px; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+
 /* ---- settings ---- */
 
 .settings-card { max-width: 640px; display: grid; gap: 4px; }
+.settings-card > p { color: var(--ink-2); }
 .settings-card .form-error, .notice { margin-bottom: 10px; }
 .notice { padding: 10px 12px; border-radius: 7px; color: var(--ink-2); background: color-mix(in oklab, var(--ink) 5%, var(--surface)); }
 
@@ -319,6 +346,17 @@ dialog .form-error { color: var(--ink); margin-bottom: 14px; }
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .tile { padding: 12px 12px 10px; }
   .tile-value { font-size: 22px; }
+}
+
+@media (max-width: 720px) {
+  /* Each container becomes a block: name and state side by side, actions on their own line. */
+  .containers thead { display: none; }
+  .containers tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 12px 0; border-top: 1px solid var(--hairline); }
+  .containers tr:first-child { border-top: 0; padding-top: 2px; }
+  .containers td { border: 0; padding: 0; white-space: normal; min-width: 0; overflow-wrap: anywhere; }
+  .containers td.wide-only { display: none; }
+  .containers td:last-child { grid-column: 1 / -1; }
+  .row-actions { justify-content: flex-start; flex-wrap: wrap; margin-top: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

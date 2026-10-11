@@ -10,10 +10,11 @@ A self-hosted web dashboard for managing a Linux homelab server from the browser
 - Live overview pushed over WebSocket: CPU, memory, disk, temperature, network and battery,
   each with a one-hour trend, plus storage and system details
 - Seven days of stat history in SQLite
+- Docker containers: state, published ports, logs, and start, stop and restart
 - Settings page to restart or stop the dashboard and toggle start on boot
 - Light and dark themes, usable on a phone
 
-Planned: Docker containers and Compose stacks, systemd services, logs and updates.
+Planned: Compose stacks, systemd services, system logs and updates.
 
 ## Install
 
@@ -40,6 +41,12 @@ What it puts on the system:
 | `/etc/sudoers.d/homelab_manager` | Lets the dashboard restart, stop, enable and disable its own service, nothing else |
 
 The service runs as a dedicated `homelab_manager` user, not root.
+
+### Docker access
+
+Managing containers requires membership of the `docker` group, which is equivalent to root on the machine.
+The installer asks before granting it. To change your answer later, re-run the installer with `--docker`
+or `--no-docker`.
 
 ## Managing it
 

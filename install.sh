@@ -8,6 +8,8 @@
 #   --port PORT         port to listen on (default 7575)
 #   --archive FILE      install from a local release archive instead of downloading
 #   --import-data DIR   copy an existing database from DIR on a fresh install
+#   --docker            let the dashboard manage Docker containers (root-equivalent access)
+#   --no-docker         do not grant Docker access, and remove it if previously granted
 #   --yes               never prompt; use defaults for anything not given
 set -euo pipefail
 
@@ -21,7 +23,7 @@ UNIT_FILE="/etc/systemd/system/$NAME.service"
 SUDOERS_FILE="/etc/sudoers.d/$NAME"
 DEFAULT_PORT=7575
 
-host="" port="" archive="" import_data="" assume_yes=0
+host="" port="" archive="" import_data="" assume_yes=0 docker_access=""
 
 say() { printf '%s\n' "$*"; }
 step() { printf '\033[1m==>\033[0m %s\n' "$*"; }
@@ -33,8 +35,10 @@ while [ $# -gt 0 ]; do
     --port) port="${2:?--port needs a value}"; shift 2 ;;
     --archive) archive="${2:?--archive needs a value}"; shift 2 ;;
     --import-data) import_data="${2:?--import-data needs a value}"; shift 2 ;;
+    --docker) docker_access=yes; shift ;;
+    --no-docker) docker_access=no; shift ;;
     --yes | -y) assume_yes=1; shift ;;
-    -h | --help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "Unknown option: $1" ;;
   esac
 done
@@ -144,6 +148,27 @@ HLM_PORT=$port
 CONF
   umask 022
   chown root:"$NAME" "$CONF_FILE"
+fi
+
+# Docker access is root-equivalent, so it is only granted when asked for.
+if getent group docker >/dev/null; then
+  if [ -z "$docker_access" ] && [ "$upgrade" -eq 0 ] && [ "$assume_yes" -eq 0 ] && [ -r /dev/tty ]; then
+    say ""
+    say "Docker is installed. The dashboard can list, start, stop and restart containers and show their logs."
+    say "This needs membership of the docker group, which is equivalent to root access on this machine."
+    printf 'Allow the dashboard to manage Docker? [y/N] '
+    read -r answer </dev/tty || answer=""
+    case "$answer" in y | Y | yes) docker_access=yes ;; *) docker_access=no ;; esac
+  fi
+  if [ "$docker_access" = yes ]; then
+    step "Granting Docker access"
+    usermod -aG docker "$NAME"
+  elif [ "$docker_access" = no ] && id -nG "$NAME" | tr ' ' '\n' | grep -qx docker; then
+    step "Removing Docker access"
+    gpasswd -d "$NAME" docker >/dev/null
+  fi
+elif [ "$docker_access" = yes ]; then
+  say "Note: --docker was given but Docker is not installed; skipping."
 fi
 
 sed "s|@SYSTEMCTL@|$systemctl_bin|g" "$APP_DIR/packaging/$NAME.service" > "$UNIT_FILE"

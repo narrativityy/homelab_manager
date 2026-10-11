@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { api } from './api.js';
 import { useStats } from './useStats.js';
 import Overview from './pages/Overview.jsx';
+import Containers from './pages/Containers.jsx';
 import Settings from './pages/Settings.jsx';
 import { Logo, MoonIcon, SunIcon } from './components/Icons.jsx';
 
 const STATUS_LABEL = { live: 'Live', connecting: 'Connecting', offline: 'Reconnecting' };
 const PAGES = [
   { path: '/', label: 'Overview' },
+  { path: '/containers', label: 'Containers' },
   { path: '/settings', label: 'Settings' },
 ];
 
@@ -68,7 +70,7 @@ export default function Dashboard({ username, onSignedOut }) {
       </header>
 
       <main className="page">
-        {path === '/settings' ? <Settings /> : <Overview stats={stats} />}
+        {path === '/settings' ? <Settings /> : path === '/containers' ? <Containers /> : <Overview stats={stats} />}
       </main>
     </div>
   );
