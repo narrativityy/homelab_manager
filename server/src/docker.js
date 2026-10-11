@@ -6,14 +6,14 @@ const REQUEST_TIMEOUT_MS = 60 * 1000; // a stop waits out the container's grace 
 const MAX_LOG_LINES = 1000;
 
 // Why the Docker socket cannot be used, keyed by the connection error.
-const UNAVAILABLE = {
+export const UNAVAILABLE = {
   ENOENT: 'not-installed',
   ECONNREFUSED: 'not-running',
   EACCES: 'no-permission',
 };
 
 /** Calls the Docker Engine API over its Unix socket. Resolves to parsed JSON, or a Buffer when raw. */
-function docker(method, path, { raw = false } = {}) {
+export function docker(method, path, { raw = false } = {}) {
   return new Promise((resolve, reject) => {
     const req = http.request({ socketPath: SOCKET, method, path }, (res) => {
       const chunks = [];

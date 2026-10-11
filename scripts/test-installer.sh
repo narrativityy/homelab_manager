@@ -79,6 +79,11 @@ check "upgrade keeps the configured port" "wait_up $B"
 check "upgrade keeps the start-on-boot choice" "! systemctl is-enabled -q homelab_manager"
 check "upgrade keeps the account" "json $B/api/auth/status | grep -q '\"username\":\"admin\"'"
 
+mkdir -p /srv/stacks
+bash /rel/install.sh --archive "$ARCHIVE" --yes --stacks-dir /srv/stacks >/dev/null 2>&1
+check "--stacks-dir is written to the config" "grep -qx 'HLM_STACKS_DIR=/srv/stacks' /etc/homelab_manager/config.env"
+check "the port setting survives it" "grep -qx 'HLM_PORT=7576' /etc/homelab_manager/config.env && wait_up $B"
+
 echo "==> Docker access"
 check "Docker reported as not installed" "json $B/api/docker | grep -q '\"reason\":\"not-installed\"'"
 groupadd docker

@@ -8,6 +8,7 @@ import { config } from './config.js';
 import { dockerRouter } from './docker.js';
 import { authRouter, getSessionUser, initSetupToken, purgeExpiredSessions, requireAuth } from './auth.js';
 import { serviceRouter } from './service.js';
+import { stacksRouter } from './stacks.js';
 import { startCollector, statsRouter } from './stats.js';
 import { setupStatsWs } from './statsWs.js';
 
@@ -48,6 +49,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/stats', requireAuth, statsRouter);
 app.use('/api/service', requireAuth, serviceRouter);
 app.use('/api/docker', requireAuth, dockerRouter);
+app.use('/api/stacks', requireAuth, stacksRouter);
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 if (fs.existsSync(config.clientDist)) {

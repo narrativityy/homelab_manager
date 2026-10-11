@@ -1,6 +1,6 @@
 // End-to-end API tests: starts a real server on a free port with a throwaway data directory.
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import net from 'node:net';
 import os from 'node:os';
@@ -17,6 +17,8 @@ let dataDir;
 let base;
 let setupToken;
 let cookie = '';
+let stacksDir;
+const stackName = `hlm-test-${process.pid}`;
 
 function freePort() {
   return new Promise((resolve) => {
@@ -55,10 +57,24 @@ function openSocket(headers) {
 
 before(async () => {
   dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hlm-test-'));
+  // A throwaway Compose stack for the stack tests, named so it cannot collide with a real one.
+  stacksDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hlm-stacks-'));
+  fs.mkdirSync(path.join(stacksDir, stackName));
+  fs.writeFileSync(
+    path.join(stacksDir, stackName, 'compose.yaml'),
+    'services:\n  app:\n    image: busybox:stable\n    command: sleep 300\n    stop_grace_period: 1s\n',
+  );
   const port = await freePort();
   base = `http://127.0.0.1:${port}`;
   server = spawn(process.execPath, [path.join(root, 'server/src/index.js')], {
-    env: { ...process.env, HLM_HOST: '127.0.0.1', HLM_PORT: String(port), HLM_DATA_DIR: dataDir, HLM_SYSTEMD_UNIT: '' },
+    env: {
+      ...process.env,
+      HLM_HOST: '127.0.0.1',
+      HLM_PORT: String(port),
+      HLM_DATA_DIR: dataDir,
+      HLM_SYSTEMD_UNIT: '',
+      HLM_STACKS_DIR: stacksDir,
+    },
     stdio: ['ignore', 'pipe', 'inherit'],
   });
   setupToken = await new Promise((resolve, reject) => {
@@ -75,7 +91,13 @@ before(async () => {
 
 after(() => {
   server?.kill();
+  try {
+    execFileSync('docker', ['compose', '-p', stackName, 'down', '-t', '1'], { stdio: 'ignore' });
+  } catch {
+    // Docker is not available, or the stack was never created
+  }
   fs.rmSync(dataDir, { recursive: true, force: true });
+  fs.rmSync(stacksDir, { recursive: true, force: true });
 });
 
 test('a fresh install reports that setup is required', async () => {
@@ -162,6 +184,46 @@ test('the Docker endpoint answers whether or not Docker is present', async () =>
 test('container routes validate the id and the action', async () => {
   assert.equal((await call('POST', '/api/docker/containers/not-an-id/stop')).status, 400);
   assert.equal((await call('POST', `/api/docker/containers/${'a'.repeat(64)}/remove`)).status, 400);
+});
+
+test('stack routes validate the action, the stack and the job', async () => {
+  assert.equal((await call('POST', `/api/stacks/${stackName}/destroy`)).status, 400);
+  assert.equal((await call('GET', '/api/stacks/jobs/nope')).status, 404);
+  const { data } = await call('GET', '/api/stacks');
+  if (data.available) assert.equal((await call('POST', '/api/stacks/no-such-stack/up')).status, 404);
+});
+
+test('a stack in the stacks directory can be brought up and down', async (t) => {
+  const list = await call('GET', '/api/stacks');
+  assert.equal(list.status, 200);
+  if (!list.data.available) return t.skip(`Docker Compose is not usable here (${list.data.reason})`);
+
+  const find = async () => (await call('GET', '/api/stacks')).data.stacks.find((s) => s.name === stackName);
+  const runAction = async (action) => {
+    const started = await call('POST', `/api/stacks/${stackName}/${action}`);
+    assert.equal(started.status, 202, JSON.stringify(started.data));
+    for (let i = 0; i < 240; i += 1) {
+      const job = (await call('GET', `/api/stacks/jobs/${started.data.jobId}`)).data;
+      if (!job.running) return job;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    assert.fail(`${action} did not finish in time`);
+  };
+
+  const before = await find();
+  assert.equal(before.state, 'down');
+  assert.equal(before.filesReadable, true);
+
+  const up = await runAction('up');
+  assert.equal(up.exitCode, 0, up.output);
+  assert.match(up.output, /^\$ docker compose up -d/);
+  const running = await find();
+  assert.equal(running.state, 'running');
+  assert.equal(running.containers[0].service, 'app');
+
+  const down = await runAction('down');
+  assert.equal(down.exitCode, 0, down.output);
+  assert.equal((await find()).state, 'down');
 });
 
 test('the stats WebSocket requires a session and a same-origin request', async () => {
