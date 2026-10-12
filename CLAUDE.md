@@ -71,8 +71,14 @@ updated in the same pull request as the feature it documents.
 
 ## 3. Hard Rules
 
+- **Never edit, create, or delete a file without explicit approval first** — propose the change and wait for a
+  yes, even for small or "obvious" fixes.
+- **Never `git push` without explicit approval** — including opening, updating or merging a pull request.
+  Committing locally does not need approval once the edit itself was approved.
 - **Never push to `main`.** Every change goes on its own branch and through a pull request with both CI jobs
   green; pull requests are squash-merged.
+- For any feature in `server/` that could reasonably get tests, **write the tests first**, confirm them with
+  the user, then implement. `client/` has no test suite.
 - **Ask before anything that changes the host outside the repository:** running `install.sh` or upgrading the
   installed service, SSH, firewall or network settings, file permissions, and anything destructive (disk and
   LVM operations, deleting data, removing volumes).
@@ -95,8 +101,8 @@ updated in the same pull request as the feature it documents.
   it.
 - Explain briefly what each change does and why.
 - Run `npm run lint`, `npm run format:check` and `npm test` after every change, not just at the end.
-- One commit per logical change and one pull request per issue, never one giant change covering several
-  unrelated things. Reference the issue in the pull request.
+- Commit as each piece is implemented: one commit per logical change, never one giant commit covering several
+  unrelated things. One pull request per issue; reference the issue in it.
 - The pull request title becomes the squash commit message: a short imperative sentence, such as "Add Compose
   stack management". Branches are named for what they do, such as `feat/compose-stacks` or `fix/login-lockout`.
 - When two approaches are both reasonable, explain the tradeoffs and let the user pick — don't silently choose
