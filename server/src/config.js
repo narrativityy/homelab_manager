@@ -12,6 +12,8 @@ export const config = {
   port: Number(process.env.HLM_PORT) || 7575,
   dataDir: process.env.HLM_DATA_DIR || path.join(root, 'data'),
   clientDist: path.join(root, 'client/dist'),
+  // Optional directories to scan for Compose stacks that are not running (one sub-directory per stack).
+  stacksDirs: (process.env.HLM_STACKS_DIR || '').split(':').filter(Boolean),
   // Set by the systemd unit. When absent (a dev run), the dashboard cannot manage its own service.
   systemdUnit: process.env.HLM_SYSTEMD_UNIT || null,
   systemctl: process.env.HLM_SYSTEMCTL || '/usr/bin/systemctl',

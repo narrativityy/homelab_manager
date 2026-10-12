@@ -27,6 +27,13 @@ db.exec(`
     expires_at INTEGER NOT NULL
   );
 
+  -- Compose stacks seen running, remembered so they stay listed after being brought down.
+  CREATE TABLE IF NOT EXISTS stacks (
+    name  TEXT PRIMARY KEY,
+    dir   TEXT NOT NULL,
+    files TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS stats (
     ts   INTEGER PRIMARY KEY,
     cpu  REAL,

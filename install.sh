@@ -10,6 +10,7 @@
 #   --import-data DIR   copy an existing database from DIR on a fresh install
 #   --docker            let the dashboard manage Docker containers (root-equivalent access)
 #   --no-docker         do not grant Docker access, and remove it if previously granted
+#   --stacks-dir DIR    also list Compose stacks found in DIR's sub-directories, even when not running
 #   --yes               never prompt; use defaults for anything not given
 set -euo pipefail
 
@@ -23,7 +24,7 @@ UNIT_FILE="/etc/systemd/system/$NAME.service"
 SUDOERS_FILE="/etc/sudoers.d/$NAME"
 DEFAULT_PORT=7575
 
-host="" port="" archive="" import_data="" assume_yes=0 docker_access=""
+host="" port="" archive="" import_data="" assume_yes=0 docker_access="" stacks_dir=""
 
 say() { printf '%s\n' "$*"; }
 step() { printf '\033[1m==>\033[0m %s\n' "$*"; }
@@ -35,10 +36,11 @@ while [ $# -gt 0 ]; do
     --port) port="${2:?--port needs a value}"; shift 2 ;;
     --archive) archive="${2:?--archive needs a value}"; shift 2 ;;
     --import-data) import_data="${2:?--import-data needs a value}"; shift 2 ;;
+    --stacks-dir) stacks_dir="${2:?--stacks-dir needs a value}"; shift 2 ;;
     --docker) docker_access=yes; shift ;;
     --no-docker) docker_access=no; shift ;;
     --yes | -y) assume_yes=1; shift ;;
-    -h | --help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "Unknown option: $1" ;;
   esac
 done
@@ -169,6 +171,17 @@ if getent group docker >/dev/null; then
   fi
 elif [ "$docker_access" = yes ]; then
   say "Note: --docker was given but Docker is not installed; skipping."
+fi
+
+if [ -n "$stacks_dir" ]; then
+  [ -d "$stacks_dir" ] || die "Stacks directory not found: $stacks_dir"
+  stacks_dir="$(cd "$stacks_dir" && pwd)"
+  sed -i '/^HLM_STACKS_DIR=/d' "$CONF_FILE"
+  printf 'HLM_STACKS_DIR=%s\n' "$stacks_dir" >> "$CONF_FILE"
+  if ! runuser -u "$NAME" -- test -r "$stacks_dir"; then
+    say "Note: the $NAME user cannot read $stacks_dir yet, so stacks there cannot be brought up or updated"
+    say "      from the dashboard until you give it read access."
+  fi
 fi
 
 sed "s|@SYSTEMCTL@|$systemctl_bin|g" "$APP_DIR/packaging/$NAME.service" > "$UNIT_FILE"

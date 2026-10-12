@@ -674,6 +674,84 @@ dt:first-of-type + dd {
   overflow-wrap: anywhere;
 }
 
+/* ---- stacks ---- */
+
+.stacks {
+  display: grid;
+  gap: 14px;
+}
+.stack {
+  display: grid;
+  gap: 12px;
+}
+.stack-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.stack-head h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 2px;
+}
+.stack-head code {
+  overflow-wrap: anywhere;
+}
+.stack-head .state {
+  flex: none;
+}
+.state-partial i {
+  background: var(--warn);
+}
+
+.stack-containers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.stack-containers li {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px 16px;
+  flex-wrap: wrap;
+  padding: 7px 0;
+  border-top: 1px solid var(--hairline);
+}
+.stack-containers strong {
+  font-weight: 500;
+}
+
+.stack .notice,
+.stack .form-error {
+  margin: 0;
+}
+.stack-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.job {
+  display: grid;
+  gap: 8px;
+}
+.job-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+  color: var(--ink-2);
+}
+.job-output {
+  height: auto;
+  max-height: 280px;
+  margin: 0;
+}
+
 /* ---- settings ---- */
 
 .settings-card {

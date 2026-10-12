@@ -1,22 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
+import DockerUnavailable from '../components/DockerUnavailable.jsx';
 
 const REFRESH_MS = 5000;
-const GRANT_COMMAND = 'sudo usermod -aG docker homelab_manager && sudo systemctl restart homelab_manager';
-
-const UNAVAILABLE = {
-  'not-installed': {
-    title: 'Docker is not installed',
-    body: 'Install Docker on this server and its containers will show up here.',
-  },
-  'not-running': { title: 'Docker is not running', body: 'Start it on the server with: sudo systemctl start docker' },
-  'no-permission': {
-    title: 'The dashboard is not allowed to use Docker',
-    body: 'Access to Docker is equivalent to root on this server, so it is not granted by default. To allow it, run this on the server:',
-    command: GRANT_COMMAND,
-  },
-};
-
 const STATE_LABEL = {
   running: 'Running',
   exited: 'Stopped',
@@ -198,7 +184,6 @@ export default function Containers() {
 
   const containers = data?.containers || [];
   const runningCount = containers.filter((c) => c.state === 'running').length;
-  const unavailable = data && !data.available ? UNAVAILABLE[data.reason] : null;
 
   return (
     <>
@@ -213,17 +198,7 @@ export default function Containers() {
         </p>
       )}
 
-      {unavailable && (
-        <section className="card settings-card">
-          <h2>{unavailable.title}</h2>
-          <p>{unavailable.body}</p>
-          {unavailable.command && (
-            <pre>
-              <code>{unavailable.command}</code>
-            </pre>
-          )}
-        </section>
-      )}
+      {data && !data.available && <DockerUnavailable reason={data.reason} />}
 
       {data?.available && containers.length === 0 && (
         <section className="card">

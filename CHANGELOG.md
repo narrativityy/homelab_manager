@@ -14,6 +14,8 @@ All notable changes to this project are recorded here. The format follows
 - Sign-in with hashed passwords, server-side sessions and login rate limiting
 - Overview page: live CPU, memory, disk, temperature, network and battery, each with a one-hour trend
 - Seven days of stat history
+- Stacks page: Compose stacks discovered from running containers and an optional stacks directory, with up,
+  update, restart, stop and down, and live command output
 - Containers page: state, published ports, logs, and start, stop and restart, with opt-in Docker access
 - Settings page: restart or stop the dashboard and toggle start on boot
 - Light and dark themes and a phone layout

@@ -12,11 +12,12 @@ A self-hosted web dashboard for managing a Linux homelab server from the browser
 - Live overview pushed over WebSocket: CPU, memory, disk, temperature, network and battery,
   each with a one-hour trend, plus storage and system details
 - Seven days of stat history in SQLite
+- Compose stacks: bring up, update (pull and redeploy), restart, stop and take down, with live command output
 - Docker containers: state, published ports, logs, and start, stop and restart
 - Settings page to restart or stop the dashboard and toggle start on boot
 - Light and dark themes, usable on a phone
 
-Planned: Compose stacks, systemd services, system logs and updates.
+Planned: systemd services, system logs and updates.
 
 ## Install
 
@@ -49,6 +50,19 @@ The service runs as a dedicated `homelab_manager` user, not root.
 Managing containers requires membership of the `docker` group, which is equivalent to root on the machine.
 The installer asks before granting it. To change your answer later, re-run the installer with `--docker`
 or `--no-docker`.
+
+### Compose stacks
+
+Stacks are discovered from the Compose labels on existing containers, so anything you have started with
+`docker compose` appears on its own. Restart, stop and down work from those labels alone.
+
+Bringing a stack up or updating it means reading its compose file (and `.env`), so the `homelab_manager`
+user needs read access to the stack's directory. To also list stacks that have never been started, point
+the dashboard at the directory that holds them, one sub-directory per stack:
+
+```bash
+sudo ./install.sh --stacks-dir /path/to/stacks   # or set HLM_STACKS_DIR in config.env
+```
 
 ## Managing it
 
